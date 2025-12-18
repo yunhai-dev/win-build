@@ -4,11 +4,16 @@ on:
   workflow_dispatch:
   push:
     branches: [ main ]
+    tags:
+      - 'v*'
     paths:
       - 'main.py'
       - '.github/workflows/build-windows.yml'
       - 'pyproject.toml'
       - 'uv.lock'
+
+permissions:
+  contents: write
 
 jobs:
   build:
@@ -39,3 +44,13 @@ jobs:
           path: dist/xmz.exe
           if-no-files-found: error
           retention-days: 14
+
+      - name: Publish GitHub Release (on tag)
+        if: startsWith(github.ref, 'refs/tags/')
+        uses: softprops/action-gh-release@v1
+        with:
+          files: dist/xmz.exe
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
