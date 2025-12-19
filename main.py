@@ -20,14 +20,20 @@ def run(input_path: str, output_path: str, url: str = DEFAULT_URL, log=print):
             page.ele('#search-field__input').input(item)
             # data-cy="header-search-field"
             page.ele('css:[type="submit"]').click()
-
+            if page.ele('text:No results'):
+                log(f'No results for {item}')
+                output.append([item, 'No results'])
+                page.ele('#search-field__input').clear()
+                continue
             href = page.ele('css:[title="Technical Data"]').parent().parent().attr('href')
             log(href)
             output.append([item, href])
+            page.ele('#search-field__input').clear()
         except Exception as e:
             log(f"Error processing {item}: {e}")
             output.append([item, 'Error'])
             page.get(url)
+            page.ele('#search-field__input').clear()
 
     # export csv
     with open(output_path, 'w', encoding='utf-8') as f:
